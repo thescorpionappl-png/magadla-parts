@@ -878,12 +878,26 @@ function HomePage({ cats, parts, onAddToCart, user, t }) {
           {t.quickAccess || "Quick Access"}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-          <QuickAccessBtn icon="🛍️" label="חנות חלקים" color="#F59E0B" />
-          <QuickAccessBtn icon="🔧" label="מוסכים" color="#3B82F6" />
-          <QuickAccessBtn icon="🚨" label="חירום" color="#EF4444" />
-          <QuickAccessBtn icon="🚗" label="התמחויות" color="#10B981" />
-          <QuickAccessBtn icon="⭐" label="מקצועי" color="#8B5CF6" />
-          <QuickAccessBtn icon="📞" label="צור קשר" color="#6B7280" />
+          {[
+            { icon: "🛍️", label: "חנות חלקים", color: "#F59E0B" },
+            { icon: "🔧", label: "מוסכים", color: "#3B82F6" },
+            { icon: "🚨", label: "חירום", color: "#EF4444" },
+            { icon: "🚗", label: "התמחויות", color: "#10B981" },
+            { icon: "⭐", label: "מקצועי", color: "#8B5CF6" },
+            { icon: "📞", label: "צור קשר", color: "#6B7280" },
+          ].map((action, i) => (
+            <button key={i} style={{
+              background: `linear-gradient(135deg, ${action.color}22, ${action.color}11)`,
+              border: `1px solid ${action.color}44`,
+              borderRadius: "12px", padding: "12px 8px", cursor: "pointer",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
+              transition: "all 0.2s",
+            }}>
+              <span style={{ fontSize: "24px" }}>{action.icon}</span>
+              <span style={{ color: action.color, fontSize: "12px", fontWeight: "700", textAlign: "center", lineHeight: "1.3" }}>{action.label}</span>
+            </button>
+          ))}
+
         </div>
       </div>
 
