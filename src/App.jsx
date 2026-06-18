@@ -1,5 +1,208 @@
 import { useState, useEffect } from "react";
 
+// ─── Translations ────────────────────────────────────────────────────────────
+const LANGS = {
+  he: {
+    dir: "rtl",
+    appName: "WHEELS",
+    appSub: "חלקי חילוף לגלגלים ורכב",
+    login: "כניסה / הרשמה",
+    enterPhone: "הכנס מספר טלפון להתחברות או הרשמה",
+    phonePlaceholder: "050-000-0000",
+    next: "המשך →",
+    enterName: "מה השם שלך?",
+    namePlaceholder: "שם מלא",
+    signIn: "כניסה →",
+    changePhone: "← שנה מספר",
+    noCode: "ללא קוד אימות — כניסה מיידית",
+    loading: "⏳ נכנס...",
+    home: "בית", providers: "סדנות", orders: "הזמנות", profile: "פרופיל",
+    step1: "שלב 1 — בחר רכב",
+    step2: "שלב 2 — בחר קטגוריה",
+    searchPlaceholder: "🔍 חפש לפי שם חלק או קוד קטלוגי...",
+    clearAll: "נקה הכל",
+    addToProfile: "הוסף רכב לפרופיל",
+    noVehicles: "💡 הוסף רכב בפרופיל כדי לסנן חלקים",
+    partsFound: "חלקים נמצאו",
+    forSelectedVehicles: "לרכבים שנבחרו",
+    noPartsFound: "😕 לא נמצאו חלקים תואמים",
+    addToCart: "הוסף לעגלה",
+    addedToCart: "✓ נוסף לעגלה",
+    inStock: "במלאי",
+    outOfStock: "אזל",
+    garages: "🔧 מוסכים",
+    roadServices: "🚛 שירותי דרך",
+    filterByBrand: "סינון לפי מותג רכב:",
+    filterByService: "סינון לפי סוג שירות:",
+    allBrands: "הכל",
+    myOrders: "📦 ההזמנות שלי",
+    noOrders: "אין הזמנות עדיין",
+    myProfile: "👤 הפרופיל שלי",
+    myVehicles: "🚗 הרכבים שלי",
+    noVehiclesReg: "אין רכבים רשומים",
+    addVehicleByPlate: "➕ הוסף רכב לפי לוחית רישוי",
+    platePlaceholder: "12-345-67",
+    search: "🔍 חפש",
+    logout: "התנתקות",
+    cart: "עגלה",
+    emptyCart: "העגלה ריקה",
+    backToShop: "חזרה לחנות",
+    total: 'סה"כ לתשלום',
+    confirmOrder: "✅ אשר הזמנה",
+    clear: "נקה",
+    admin: "מנהל",
+    customer: "לקוח",
+    manufacturer: "יצרן",
+    model: "דגם",
+    year: "שנת ייצור",
+    color: "צבע",
+    engine: "נפח מנוע",
+    fuel: "סוג דלק",
+    gear: "תיבת הילוכים",
+    vin: "מספר שילדה",
+    seats: "מספר מושבים",
+    plate: "לוחית רישוי",
+    notFound: "לא נמצא רכב עם לוחית רישוי זו",
+    searchError: "שגיאה בחיפוש — נסה שוב",
+    saved: "✓ נשמר!",
+    addVehicle: "+ הוסף רכב",
+    pending: "ממתין", processing: "בטיפול", shipped: "נשלח", delivered: "נמסר", cancelled: "בוטל",
+  },
+  ar: {
+    dir: "rtl",
+    appName: "WHEELS",
+    appSub: "قطع غيار للسيارات",
+    login: "دخول / تسجيل",
+    enterPhone: "أدخل رقم الهاتف للدخول أو التسجيل",
+    phonePlaceholder: "050-000-0000",
+    next: "التالي →",
+    enterName: "ما اسمك؟",
+    namePlaceholder: "الاسم الكامل",
+    signIn: "دخول →",
+    changePhone: "← تغيير الرقم",
+    noCode: "بدون رمز تحقق — دخول فوري",
+    loading: "⏳ جاري الدخول...",
+    home: "الرئيسية", providers: "ورش", orders: "طلباتي", profile: "حسابي",
+    step1: "خطوة 1 — اختر سيارة",
+    step2: "خطوة 2 — اختر فئة",
+    searchPlaceholder: "🔍 ابحث باسم القطعة أو الكود...",
+    clearAll: "مسح الكل",
+    addToProfile: "أضف السيارة للملف",
+    noVehicles: "💡 أضف سيارة في ملفك لتصفية القطع",
+    partsFound: "قطع موجودة",
+    forSelectedVehicles: "للسيارات المختارة",
+    noPartsFound: "😕 لا توجد قطع مطابقة",
+    addToCart: "أضف للسلة",
+    addedToCart: "✓ تمت الإضافة",
+    inStock: "متوفر",
+    outOfStock: "نفد",
+    garages: "🔧 ورش",
+    roadServices: "🚛 خدمات الطريق",
+    filterByBrand: "تصفية حسب الماركة:",
+    filterByService: "تصفية حسب نوع الخدمة:",
+    allBrands: "الكل",
+    myOrders: "📦 طلباتي",
+    noOrders: "لا توجد طلبات بعد",
+    myProfile: "👤 حسابي",
+    myVehicles: "🚗 سياراتي",
+    noVehiclesReg: "لا توجد سيارات مسجلة",
+    addVehicleByPlate: "➕ أضف سيارة برقم اللوحة",
+    platePlaceholder: "12-345-67",
+    search: "🔍 بحث",
+    logout: "تسجيل خروج",
+    cart: "السلة",
+    emptyCart: "السلة فارغة",
+    backToShop: "العودة للمتجر",
+    total: "المجموع الكلي",
+    confirmOrder: "✅ تأكيد الطلب",
+    clear: "مسح",
+    admin: "مدير",
+    customer: "عميل",
+    manufacturer: "الشركة المصنعة",
+    model: "الموديل",
+    year: "سنة الصنع",
+    color: "اللون",
+    engine: "حجم المحرك",
+    fuel: "نوع الوقود",
+    gear: "ناقل الحركة",
+    vin: "رقم الهيكل",
+    seats: "عدد المقاعد",
+    plate: "رقم اللوحة",
+    notFound: "لم يتم العثور على سيارة بهذا الرقم",
+    searchError: "خطأ في البحث — حاول مجدداً",
+    saved: "✓ تم الحفظ!",
+    addVehicle: "+ أضف سيارة",
+    pending: "قيد الانتظار", processing: "قيد المعالجة", shipped: "تم الشحن", delivered: "تم التسليم", cancelled: "ملغي",
+  },
+  en: {
+    dir: "ltr",
+    appName: "WHEELS",
+    appSub: "Auto Parts & Accessories",
+    login: "Sign In / Register",
+    enterPhone: "Enter your phone number to sign in or register",
+    phonePlaceholder: "050-000-0000",
+    next: "Continue →",
+    enterName: "What is your name?",
+    namePlaceholder: "Full name",
+    signIn: "Sign In →",
+    changePhone: "← Change number",
+    noCode: "No verification code — instant access",
+    loading: "⏳ Signing in...",
+    home: "Home", providers: "Garages", orders: "Orders", profile: "Profile",
+    step1: "Step 1 — Select vehicle",
+    step2: "Step 2 — Select category",
+    searchPlaceholder: "🔍 Search by part name or catalog code...",
+    clearAll: "Clear all",
+    addToProfile: "Add vehicle to profile",
+    noVehicles: "💡 Add a vehicle in your profile to filter parts",
+    partsFound: "parts found",
+    forSelectedVehicles: "for selected vehicles",
+    noPartsFound: "😕 No matching parts found",
+    addToCart: "Add to cart",
+    addedToCart: "✓ Added to cart",
+    inStock: "In stock",
+    outOfStock: "Out of stock",
+    garages: "🔧 Garages",
+    roadServices: "🚛 Road Services",
+    filterByBrand: "Filter by car brand:",
+    filterByService: "Filter by service type:",
+    allBrands: "All",
+    myOrders: "📦 My Orders",
+    noOrders: "No orders yet",
+    myProfile: "👤 My Profile",
+    myVehicles: "🚗 My Vehicles",
+    noVehiclesReg: "No vehicles registered",
+    addVehicleByPlate: "➕ Add vehicle by license plate",
+    platePlaceholder: "12-345-67",
+    search: "🔍 Search",
+    logout: "Sign out",
+    cart: "Cart",
+    emptyCart: "Cart is empty",
+    backToShop: "Back to shop",
+    total: "Total",
+    confirmOrder: "✅ Place Order",
+    clear: "Clear",
+    admin: "Admin",
+    customer: "Customer",
+    manufacturer: "Manufacturer",
+    model: "Model",
+    year: "Year",
+    color: "Color",
+    engine: "Engine size",
+    fuel: "Fuel type",
+    gear: "Transmission",
+    vin: "VIN / Chassis",
+    seats: "Seats",
+    plate: "License plate",
+    notFound: "No vehicle found with this plate number",
+    searchError: "Search error — please try again",
+    saved: "✓ Saved!",
+    addVehicle: "+ Add vehicle",
+    pending: "Pending", processing: "Processing", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled",
+  },
+};
+
+
 const SUPABASE_URL = "https://eeeujeboftmhblfmyabp.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlZXVqZWJvZnRtaGJsZm15YWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNzg1OTUsImV4cCI6MjA5Njk1NDU5NX0.BI6JUYmuXWWi7dQpm8eC6AmMq-owK3E79e_omtHmQQc";
 
@@ -199,6 +402,13 @@ const S = {
 export default function App() {
   const [page, setPage] = useState("login");
   const [user, setUser] = useState(null);
+  const [lang, setLang] = useState(() => localStorage.getItem("wheels_lang") || "he");
+  const t = LANGS[lang] || LANGS.he;
+
+  const changeLang = (l) => {
+    setLang(l);
+    localStorage.setItem("wheels_lang", l);
+  };
   const [cats, setCats] = useState([]);
   const [parts, setParts] = useState([]);
   const [providers, setProviders] = useState([]);
@@ -353,7 +563,7 @@ export default function App() {
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
   if (page === "login") {
-    return <LoginPage onLogin={handleLogin} loading={loading} error={error} />;
+    return <LoginPage onLogin={handleLogin} loading={loading} error={error} t={t} lang={lang} onChangeLang={changeLang} />;
   }
 
   return (
@@ -366,10 +576,11 @@ export default function App() {
           <span style={{ color: S.muted, fontSize: "13px", marginRight: "4px" }}>חלקי גלגלים</span>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <NavBtn icon="🏠" label="בית" active={page === "home"} onClick={() => setPage("home")} />
-          <NavBtn icon="🔧" label="סדנות" active={page === "providers"} onClick={() => setPage("providers")} />
-          <NavBtn icon="📦" label="הזמנות" active={page === "orders"} onClick={() => setPage("orders")} />
-          <NavBtn icon="👤" label="פרופיל" active={page === "profile"} onClick={() => setPage("profile")} />
+          <LangSwitcher lang={lang} onChangeLang={onChangeLang} />
+          <NavBtn icon="🏠" label={t.home} active={page === "home"} onClick={() => setPage("home")} />
+          <NavBtn icon="🔧" label={t.providers} active={page === "providers"} onClick={() => setPage("providers")} />
+          <NavBtn icon="📦" label={t.orders} active={page === "orders"} onClick={() => setPage("orders")} />
+          <NavBtn icon="👤" label={t.profile} active={page === "profile"} onClick={() => setPage("profile")} />
           <button
             onClick={() => setPage("cart")}
             style={{ ...S.btn("primary"), position: "relative", padding: "8px 14px" }}
@@ -394,15 +605,31 @@ export default function App() {
         {!loading && page === "home" && (
           <HomePage cats={cats} parts={parts} onAddToCart={addToCart} user={user} />
         )}
-        {page === "providers" && <ProvidersPage providers={providers} />}
+        {page === "providers" && <ProvidersPage providers={providers} t={t} />}
         {page === "cart" && (
-          <CartPage cart={cart} onRemove={removeFromCart} onUpdateQty={updateQty} onOrder={placeOrder} setPage={setPage} />
+          <CartPage cart={cart} onRemove={removeFromCart} onUpdateQty={updateQty} onOrder={placeOrder} setPage={setPage} t={t} />
         )}
-        {page === "orders" && <OrdersPage orders={orders} />}
+        {page === "orders" && <OrdersPage orders={orders} t={t} />}
         {page === "profile" && (
-          <ProfilePage user={user} onUpdateVehicles={updateVehicles} onLogout={handleLogout} />
+          <ProfilePage user={user} onUpdateVehicles={updateVehicles} onLogout={handleLogout} t={t} />
         )}
       </div>
+    </div>
+  );
+}
+
+function LangSwitcher({ lang, onChangeLang }) {
+  return (
+    <div style={{ display: "flex", gap: "4px", background: "#0D1120", borderRadius: "8px", padding: "3px" }}>
+      {[["he", "עב"], ["ar", "ع"], ["en", "EN"]].map(([l, label]) => (
+        <button key={l} onClick={() => onChangeLang(l)} style={{
+          background: lang === l ? "#F59E0B" : "transparent",
+          color: lang === l ? "#0B0F1A" : "#6B7280",
+          border: "none", borderRadius: "6px", padding: "4px 8px",
+          cursor: "pointer", fontWeight: lang === l ? "700" : "400",
+          fontSize: "12px", minWidth: "28px",
+        }}>{label}</button>
+      ))}
     </div>
   );
 }
@@ -424,7 +651,7 @@ function NavBtn({ icon, label, active, onClick }) {
 }
 
 // ─── Login Page ─────────────────────────────────────────────────────────────
-function LoginPage({ onLogin, loading, error }) {
+function LoginPage({ onLogin, loading, error, t, lang, onChangeLang }) {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [step, setStep] = useState(1); // 1=phone, 2=name
@@ -438,21 +665,22 @@ function LoginPage({ onLogin, loading, error }) {
   };
 
   return (
-    <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center", direction: t.dir }}>
       <div style={{ ...S.card, width: "340px", textAlign: "center" }}>
         <div style={{ fontSize: "48px", marginBottom: "8px" }}>🛞</div>
-        <h1 style={{ color: S.accent, fontSize: "28px", margin: "0 0 4px" }}>WHEELS</h1>
-        <p style={{ color: S.muted, marginBottom: "24px", fontSize: "14px" }}>חלקי חילוף לגלגלים ורכב</p>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+          <LangSwitcher lang={lang} onChangeLang={onChangeLang} />
+        </div>
+        <h1 style={{ color: S.accent, fontSize: "28px", margin: "0 0 4px" }}>{t.appName}</h1>
+        <p style={{ color: S.muted, marginBottom: "24px", fontSize: "14px" }}>{t.appSub}</p>
 
         {step === 1 && (
           <>
-            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
-              הכנס מספר טלפון להתחברות או הרשמה
-            </p>
+            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>{t.enterPhone}</p>
             <input
               style={{ ...S.input, marginBottom: "16px", fontSize: "18px", textAlign: "center", letterSpacing: "2px" }}
               type="tel"
-              placeholder="050-000-0000"
+              placeholder={t.phonePlaceholder}
               value={phone}
               onChange={e => setPhone(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handlePhoneNext()}
@@ -463,21 +691,19 @@ function LoginPage({ onLogin, loading, error }) {
               style={{ ...S.btn(), width: "100%", padding: "12px" }}
               disabled={phone.length < 9 || loading}
             >
-              המשך →
+              {t.next}
             </button>
           </>
         )}
 
         {step === 2 && (
           <>
-            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
-              מה השם שלך?
-            </p>
+            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>{t.enterName}</p>
             <div style={{ ...S.badge(S.accent), marginBottom: "16px", fontSize: "14px" }}>📱 {phone}</div>
             <input
               style={{ ...S.input, marginBottom: "16px", fontSize: "16px" }}
               type="text"
-              placeholder="שם מלא"
+              placeholder={t.namePlaceholder}
               value={name}
               onChange={e => setName(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSubmit()}
@@ -488,20 +714,20 @@ function LoginPage({ onLogin, loading, error }) {
               style={{ ...S.btn(), width: "100%", padding: "12px", marginBottom: "8px" }}
               disabled={!name.trim() || loading}
             >
-              {loading ? "⏳ נכנס..." : "כניסה →"}
+              {loading ? t.loading : t.signIn}
             </button>
             <button
               onClick={() => setStep(1)}
               style={{ ...S.btn("ghost"), width: "100%", padding: "8px" }}
             >
-              ← שנה מספר
+              {t.changePhone}
             </button>
           </>
         )}
 
         {error && <p style={{ color: S.danger, marginTop: "12px", fontSize: "14px" }}>{error}</p>}
         <p style={{ color: S.muted, fontSize: "11px", marginTop: "16px" }}>
-          ללא קוד אימות — כניסה מיידית
+          {t.noCode}
         </p>
       </div>
     </div>
@@ -509,7 +735,7 @@ function LoginPage({ onLogin, loading, error }) {
 }
 
 // ─── Home Page ──────────────────────────────────────────────────────────────
-function HomePage({ cats, parts, onAddToCart, user }) {
+function HomePage({ cats, parts, onAddToCart, user, t }) {
   const [search, setSearch] = useState("");
   const [selectedVehicleIds, setSelectedVehicleIds] = useState([]);
   const [selectedCats, setSelectedCats] = useState([]);
@@ -558,14 +784,14 @@ function HomePage({ cats, parts, onAddToCart, user }) {
       {/* ── שורה 1: פילטר רכבים ── */}
       <div style={{ background: "#0D1120", borderBottom: `1px solid ${S.border}`, padding: "12px 0", marginBottom: "0" }}>
         <div style={{ marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>שלב 1 — בחר רכב</span>
+          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>{t.step1}</span>
           {selectedVehicleIds.length > 0 && (
             <button onClick={() => setSelectedVehicleIds([])} style={{ background: "none", border: "none", color: S.danger, fontSize: "11px", cursor: "pointer" }}>נקה</button>
           )}
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           {vehicles.length === 0 ? (
-            <span style={{ color: S.muted, fontSize: "13px" }}>💡 הוסף רכב בפרופיל כדי לסנן חלקים</span>
+            <span style={{ color: S.muted, fontSize: "13px" }}>{t.noVehicles}</span>
           ) : (
             vehicles.map(v => {
               const active = selectedVehicleIds.includes(v.id);
@@ -591,7 +817,7 @@ function HomePage({ cats, parts, onAddToCart, user }) {
       {/* ── שורה 2: פילטר קטגוריות ── */}
       <div style={{ background: "#0F1425", borderBottom: `1px solid ${S.border}`, padding: "10px 0", marginBottom: "20px" }}>
         <div style={{ marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>שלב 2 — בחר קטגוריה</span>
+          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>{t.step2}</span>
           {selectedCats.length > 0 && (
             <button onClick={() => setSelectedCats([])} style={{ background: "none", border: "none", color: S.danger, fontSize: "11px", cursor: "pointer" }}>נקה</button>
           )}
@@ -615,31 +841,54 @@ function HomePage({ cats, parts, onAddToCart, user }) {
       </div>
 
       {/* ── חיפוש חופשי ── */}
-      <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center" }}>
+      <div style={{ marginBottom: "12px", display: "flex", gap: "10px", alignItems: "center" }}>
         <input
           style={{ ...S.input, flex: 1 }}
-          placeholder="🔍 חפש לפי שם חלק או קוד קטלוגי..."
+          placeholder={t.searchPlaceholder}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         {activeFilters > 0 && (
           <button onClick={() => { setSelectedVehicleIds([]); setSelectedCats([]); setSearch(""); }}
             style={{ ...S.btn("danger"), padding: "10px 16px", whiteSpace: "nowrap" }}>
-            נקה הכל ({activeFilters})
+            {t.clearAll} ({activeFilters})
           </button>
         )}
       </div>
 
+      {/* ── גישה מהירה ── */}
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ color: S.muted, fontSize: "11px", fontWeight: "700", marginBottom: "8px", textTransform: "uppercase" }}>
+          {t.quickAccess}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+          {(t.quickActions || []).map((action, i) => (
+            <button key={i} onClick={action.onClick ? action.onClick : undefined}
+              style={{
+                background: "linear-gradient(135deg, " + action.color + "22, " + action.color + "11)",
+                border: "1px solid " + action.color + "44",
+                borderRadius: "12px", padding: "12px 8px", cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ fontSize: "24px" }}>{action.icon}</span>
+              <span style={{ color: action.color, fontSize: "12px", fontWeight: "700", textAlign: "center", lineHeight: "1.3" }}>{action.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── תוצאות ── */}
       <div style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
-        {filtered.length} חלקים נמצאו
-        {selectedVehicleIds.length > 0 && ` לרכבים שנבחרו`}
+        {filtered.length} {t.partsFound}
+        {selectedVehicleIds.length > 0 && ` ${t.forSelectedVehicles}`}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "14px" }}>
         {filtered.length === 0 && (
           <div style={{ gridColumn: "1/-1", textAlign: "center", color: S.muted, padding: "40px" }}>
-            😕 לא נמצאו חלקים תואמים
+            {t.noPartsFound}
           </div>
         )}
         {filtered.map(p => (
@@ -650,7 +899,7 @@ function HomePage({ cats, parts, onAddToCart, user }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
               <span style={{ color: S.accent, fontWeight: "800", fontSize: "18px" }}>₪{p.price}</span>
               <span style={{ ...S.badge(p.stock > 0 ? S.success : S.danger) }}>
-                {p.stock > 0 ? `במלאי (${p.stock})` : "אזל"}
+                {p.stock > 0 ? `${t.inStock} (${p.stock})` : t.outOfStock}
               </span>
             </div>
             <button
@@ -661,7 +910,7 @@ function HomePage({ cats, parts, onAddToCart, user }) {
                 width: "100%", opacity: p.stock === 0 ? 0.5 : 1,
               }}
             >
-              {added[p.id] ? "✓ נוסף לעגלה" : "הוסף לעגלה"}
+              {added[p.id] ? t.addedToCart : t.addToCart}
             </button>
           </div>
         ))}
@@ -671,22 +920,22 @@ function HomePage({ cats, parts, onAddToCart, user }) {
 }
 
 // ─── Cart Page ───────────────────────────────────────────────────────────────
-function CartPage({ cart, onRemove, onUpdateQty, onOrder, setPage }) {
+function CartPage({ cart, onRemove, onUpdateQty, onOrder, setPage, t }) {
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
   if (cart.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "60px 20px" }}>
         <div style={{ fontSize: "64px", marginBottom: "16px" }}>🛒</div>
-        <h2 style={{ color: S.muted }}>העגלה ריקה</h2>
-        <button onClick={() => setPage("home")} style={S.btn()}>חזרה לחנות</button>
+        <h2 style={{ color: S.muted }}>{t.emptyCart}</h2>
+        <button onClick={() => setPage("home")} style={S.btn()}>{t.backToShop}</button>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 style={{ marginBottom: "20px" }}>🛒 עגלת קניות</h2>
+      <h2 style={{ marginBottom: "20px" }}>🛒 {t.cart}</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
         {cart.map(item => (
           <div key={item.id} style={{ ...S.card, display: "flex", alignItems: "center", gap: "16px" }}>
@@ -707,11 +956,11 @@ function CartPage({ cart, onRemove, onUpdateQty, onOrder, setPage }) {
 
       <div style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ color: S.muted, fontSize: "14px" }}>סה"כ לתשלום</div>
+          <div style={{ color: S.muted, fontSize: "14px" }}>{t.total}</div>
           <div style={{ fontSize: "28px", fontWeight: "800", color: S.accent }}>₪{total}</div>
         </div>
         <button onClick={onOrder} style={{ ...S.btn(), padding: "14px 32px", fontSize: "16px" }}>
-          ✅ אשר הזמנה
+          {t.confirmOrder}
         </button>
       </div>
     </div>
@@ -727,19 +976,19 @@ const STATUS_LABELS = {
   cancelled: { label: "בוטל", color: "#EF4444" },
 };
 
-function OrdersPage({ orders }) {
+function OrdersPage({ orders, t }) {
   if (orders.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "60px 20px" }}>
         <div style={{ fontSize: "64px", marginBottom: "16px" }}>📦</div>
-        <h2 style={{ color: S.muted }}>אין הזמנות עדיין</h2>
+        <h2 style={{ color: S.muted }}>{t.noOrders}</h2>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 style={{ marginBottom: "20px" }}>📦 ההזמנות שלי</h2>
+      <h2 style={{ marginBottom: "20px" }}>{t.myOrders}</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
         {orders.map(o => {
           const st = STATUS_LABELS[o.status] || STATUS_LABELS.pending;
@@ -786,7 +1035,7 @@ const ROAD_SERVICES = [
   { key: "ac", label: "❄️ מיזוג" },
 ];
 
-function ProvidersPage({ providers }) {
+function ProvidersPage({ providers, t }) {
   const [tab, setTab] = useState("garages"); // garages | road
   const [brandFilter, setBrandFilter] = useState("הכל");
   const [serviceFilter, setServiceFilter] = useState("");
@@ -851,20 +1100,20 @@ function ProvidersPage({ providers }) {
           background: tab === "garages" ? S.accent : S.card,
           color: tab === "garages" ? "#0B0F1A" : S.muted,
           fontWeight: "700", fontSize: "16px",
-        }}>🔧 מוסכים</button>
+        }}>{t.garages}</button>
         <button onClick={() => setTab("road")} style={{
           flex: 1, padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer",
           background: tab === "road" ? "#8B5CF6" : S.card,
           color: tab === "road" ? "#fff" : S.muted,
           fontWeight: "700", fontSize: "16px",
-        }}>🚛 שירותי דרך</button>
+        }}>{t.roadServices}</button>
       </div>
 
       {tab === "garages" && (
         <div>
           {/* Filter by brand */}
           <div style={{ marginBottom: "12px" }}>
-            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>סינון לפי מותג רכב:</div>
+            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>{t.filterByBrand}</div>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {CAR_BRANDS.map(b => (
                 <FilterBtn key={b} active={brandFilter === b} onClick={() => setBrandFilter(b)}>{b}</FilterBtn>
@@ -887,7 +1136,7 @@ function ProvidersPage({ providers }) {
         <div>
           {/* Filter by service type */}
           <div style={{ marginBottom: "12px" }}>
-            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>סינון לפי סוג שירות:</div>
+            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>{t.filterByService}</div>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               <FilterBtn active={!serviceFilter} onClick={() => setServiceFilter("")}>הכל</FilterBtn>
               {ROAD_SERVICES.map(s => (
@@ -913,7 +1162,7 @@ function ProvidersPage({ providers }) {
 }
 
 // ─── Profile Page ─────────────────────────────────────────────────────────────
-function ProfilePage({ user, onUpdateVehicles, onLogout }) {
+function ProfilePage({ user, onUpdateVehicles, onLogout, t }) {
   const [vehicles, setVehicles] = useState(user?.vehicles || []);
   const [plate, setPlate] = useState("");
   const [lookupResult, setLookupResult] = useState(null);
@@ -982,7 +1231,7 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
 
   return (
     <div>
-      <h2 style={{ marginBottom: "20px" }}>👤 הפרופיל שלי</h2>
+      <h2 style={{ marginBottom: "20px" }}>{t.myProfile}</h2>
 
       <div style={{ ...S.card, marginBottom: "20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -991,20 +1240,20 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
             <div style={{ color: S.muted, fontSize: "14px" }}>📱 {user?.phone}</div>
             <div style={{ marginTop: "6px" }}>
               <span style={S.badge(user?.role === "admin" ? S.accent : S.info)}>
-                {user?.role === "admin" ? "מנהל" : "לקוח"}
+                {user?.role === "admin" ? t.admin : t.customer}
               </span>
             </div>
           </div>
-          <button onClick={onLogout} style={{ ...S.btn("danger") }}>התנתקות</button>
+          <button onClick={onLogout} style={{ ...S.btn("danger") }}>{t.logout}</button>
         </div>
       </div>
 
       {/* Vehicles */}
       <div style={S.card}>
-        <h3 style={{ marginBottom: "16px" }}>🚗 הרכבים שלי</h3>
+        <h3 style={{ marginBottom: "16px" }}>{t.myVehicles}</h3>
 
         {vehicles.length === 0 && (
-          <p style={{ color: S.muted, marginBottom: "16px" }}>אין רכבים רשומים</p>
+          <p style={{ color: S.muted, marginBottom: "16px" }}>{t.noVehiclesReg}</p>
         )}
 
         {vehicles.map(v => (
@@ -1030,11 +1279,11 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
 
         {/* Plate lookup */}
         <div style={{ borderTop: `1px solid ${S.border}`, paddingTop: "16px", marginTop: "8px" }}>
-          <h4 style={{ marginBottom: "12px" }}>➕ הוסף רכב לפי לוחית רישוי</h4>
+          <h4 style={{ marginBottom: "12px" }}>{t.addVehicleByPlate}</h4>
           <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
             <input
               style={{ ...S.input, flex: 1, fontSize: "20px", textAlign: "center", letterSpacing: "4px", fontWeight: "800" }}
-              placeholder="12-345-67"
+              placeholder={t.platePlaceholder}
               value={plate}
               onChange={e => setPlate(e.target.value)}
               onKeyDown={e => e.key === "Enter" && lookupPlate()}
@@ -1042,7 +1291,7 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
             />
             <button onClick={lookupPlate} style={{ ...S.btn(), padding: "10px 20px", whiteSpace: "nowrap" }}
               disabled={lookupLoading}>
-              {lookupLoading ? "⏳" : "🔍 חפש"}
+              {lookupLoading ? "⏳" : t.search}
             </button>
           </div>
 
@@ -1064,7 +1313,7 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
               <Field label="מספר שילדה" value={lookupResult.vin} />
               <Field label="מספר מושבים" value={lookupResult.seats} />
               <button onClick={addVehicle} style={{ ...S.btn(), width: "100%", marginTop: "14px", padding: "12px" }}>
-                {saved ? "✓ נשמר!" : "✅ הוסף רכב לפרופיל"}
+                {saved ? t.saved : t.addToProfile}
               </button>
             </div>
           )}
