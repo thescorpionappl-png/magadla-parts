@@ -305,8 +305,11 @@ function VehicleLookup({ user, saveUser, t }) {
           year: record.shnat_yitzur || "",
           engine: record.nefah_manoa || "",
           fuel: record.sug_delek_nm || "",
-          gear: record.technologiat_hanaa_nm || "",
+          gear: record.technologiat_hanaa_nm || record.mispar_halukot || "",
           color: record.tzeva_rechev || "",
+          vin: record.misgeret || "",
+          drive: record.sug_hanaa_nm || "",
+          firstDate: record.taarich_reshum || "",
         });
       }
     } catch (e) {
@@ -342,14 +345,69 @@ function VehicleLookup({ user, saveUser, t }) {
 
       {result && (
         <div style={{ background: "#0B0F1A", borderRadius: "8px", padding: "12px", marginBottom: "12px" }}>
-          <div style={{ fontWeight: "800", color: S.accent, marginBottom: "8px" }}>
-            🚗 {result.make} {result.model} ({result.year})
+          <div style={{ fontWeight: "800", color: S.accent, marginBottom: "12px", fontSize: "16px" }}>
+            🚗 {result.make} {result.model}
           </div>
-          {result.engine && <div style={{ fontSize: "12px", color: S.muted }}>🔧 {t.engine}: {result.engine}cc</div>}
-          {result.fuel && <div style={{ fontSize: "12px", color: S.muted }}>⛽ {t.fuel}: {result.fuel}</div>}
-          {result.gear && <div style={{ fontSize: "12px", color: S.muted }}>⚙️ {t.gear}: {result.gear}</div>}
-          {result.color && <div style={{ fontSize: "12px", color: S.muted }}>🎨 {t.color}: {result.color}</div>}
-          <button onClick={addVehicle} style={{ ...S.btn(), width: "100%", marginTop: "10px" }}>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px" }}>
+            {result.year && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>📅 שנת יצור</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.year}</div>
+              </div>
+            )}
+            
+            {result.vin && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>🏷️ מספר שילדה</div>
+                <div style={{ fontWeight: "700", color: S.accent, fontSize: "10px", wordBreak: "break-all" }}>{result.vin}</div>
+              </div>
+            )}
+            
+            {result.engine && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>🔧 נפח מנוע</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.engine}cc</div>
+              </div>
+            )}
+            
+            {result.fuel && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>⛽ סוג דלק</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.fuel}</div>
+              </div>
+            )}
+            
+            {result.gear && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>⚙️ תיבת הילוכים</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.gear}</div>
+              </div>
+            )}
+            
+            {result.drive && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>🚗 סוג הנעה</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.drive}</div>
+              </div>
+            )}
+            
+            {result.color && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>🎨 צבע</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.color}</div>
+              </div>
+            )}
+            
+            {result.firstDate && (
+              <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+                <div style={{ color: S.muted, fontSize: "11px" }}>📆 תאריך עליה לכביש</div>
+                <div style={{ fontWeight: "700", color: S.accent }}>{result.firstDate}</div>
+              </div>
+            )}
+          </div>
+          
+          <button onClick={addVehicle} style={{ ...S.btn(), width: "100%", marginTop: "12px" }}>
             ✅ {t.addVehicle}
           </button>
         </div>
