@@ -717,41 +717,141 @@ function OrdersPage({ orders }) {
 }
 
 // ─── Providers Page ───────────────────────────────────────────────────────────
+const CAR_BRANDS = ["הכל", "מרצדס", "BMW", "אאודי", "טויוטה", "יונדאי", "קיה", "סובארו", "מאזדה", "פולקסווגן", "פורד", "שברולט", "ניסן", "הונדה", "מיצובישי", "סוזוקי", "פיאט", "רנו", "פיז'ו", "סיטרואן"];
+
+const ROAD_SERVICES = [
+  { key: "towing", label: "🚛 גרירה" },
+  { key: "rescue", label: "🆘 חילוץ" },
+  { key: "locksmith", label: "🔑 מנעולן" },
+  { key: "battery", label: "🔋 טעינת סוללה" },
+  { key: "tire", label: "🛞 פנצ'ר" },
+  { key: "fuel", label: "⛽ דלק חירום" },
+  { key: "tow_truck", label: "🏗️ רכב גרר" },
+  { key: "ac", label: "❄️ מיזוג" },
+];
+
 function ProvidersPage({ providers }) {
-  const [filter, setFilter] = useState("all");
-  const filtered = providers.filter(p => filter === "all" || p.type === filter);
+  const [tab, setTab] = useState("garages"); // garages | road
+  const [brandFilter, setBrandFilter] = useState("הכל");
+  const [serviceFilter, setServiceFilter] = useState("");
+
+  const garages = providers.filter(p => p.type === "garage" || p.type === "shop");
+  const roadServices = providers.filter(p => p.type === "road");
+
+  const filteredGarages = garages.filter(p => {
+    if (brandFilter === "הכל") return true;
+    return (p.specialBrands || []).includes(brandFilter);
+  });
+
+  const filteredRoad = roadServices.filter(p => {
+    if (!serviceFilter) return true;
+    return (p.serviceKinds || []).includes(serviceFilter);
+  });
+
+  const FilterBtn = ({ active, onClick, children }) => (
+    <button onClick={onClick} style={{
+      ...S.btn(active ? "primary" : "ghost"),
+      padding: "5px 12px", fontSize: "13px", whiteSpace: "nowrap"
+    }}>{children}</button>
+  );
+
+  const ProviderCard = ({ p }) => (
+    <div style={S.card}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+        <span style={{ fontWeight: "700", fontSize: "15px" }}>{p.name}</span>
+        <span style={S.badge(p.type === "road" ? "#8B5CF6" : S.accent)}>
+          {p.type === "road" ? "🚛 שירות דרך" : "🔧 מוסך"}
+        </span>
+      </div>
+      {p.area && <div style={{ color: S.muted, fontSize: "13px", marginBottom: "6px" }}>📍 {p.area}</div>}
+      {(p.specialBrands || []).length > 0 && (
+        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "8px" }}>
+          {p.specialBrands.map(b => <span key={b} style={S.badge(S.info)}>{b}</span>)}
+        </div>
+      )}
+      {(p.serviceKinds || []).length > 0 && (
+        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "8px" }}>
+          {p.serviceKinds.map(s => {
+            const found = ROAD_SERVICES.find(r => r.key === s);
+            return <span key={s} style={S.badge("#8B5CF6")}>{found ? found.label : s}</span>;
+          })}
+        </div>
+      )}
+      {p.phone && (
+        <a href={`tel:${p.phone}`} style={{ color: S.accent, textDecoration: "none", fontWeight: "700", fontSize: "15px", display: "block", marginTop: "8px" }}>
+          📞 {p.phone}
+        </a>
+      )}
+      {p.notes && <div style={{ color: S.muted, fontSize: "12px", marginTop: "6px" }}>{p.notes}</div>}
+    </div>
+  );
 
   return (
     <div>
-      <h2 style={{ marginBottom: "16px" }}>🔧 חנויות וסדנות</h2>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-        {[["all", "הכל"], ["shop", "חנויות"], ["garage", "סדנות"]].map(([v, l]) => (
-          <button key={v} onClick={() => setFilter(v)}
-            style={{ ...S.btn(filter === v ? "primary" : "ghost"), padding: "6px 16px" }}>
-            {l}
-          </button>
-        ))}
+      {/* Tab switcher */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
+        <button onClick={() => setTab("garages")} style={{
+          flex: 1, padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer",
+          background: tab === "garages" ? S.accent : S.card,
+          color: tab === "garages" ? "#0B0F1A" : S.muted,
+          fontWeight: "700", fontSize: "16px",
+        }}>🔧 מוסכים</button>
+        <button onClick={() => setTab("road")} style={{
+          flex: 1, padding: "14px", borderRadius: "10px", border: "none", cursor: "pointer",
+          background: tab === "road" ? "#8B5CF6" : S.card,
+          color: tab === "road" ? "#fff" : S.muted,
+          fontWeight: "700", fontSize: "16px",
+        }}>🚛 שירותי דרך</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" }}>
-        {filtered.length === 0 && <div style={{ color: S.muted }}>אין תוצאות</div>}
-        {filtered.map(p => (
-          <div key={p.id} style={S.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontWeight: "700", fontSize: "16px" }}>{p.name}</span>
-              <span style={S.badge(p.type === "shop" ? S.info : S.accent)}>
-                {p.type === "shop" ? "🛍️ חנות" : "🔧 סדנה"}
-              </span>
+
+      {tab === "garages" && (
+        <div>
+          {/* Filter by brand */}
+          <div style={{ marginBottom: "12px" }}>
+            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>סינון לפי מותג רכב:</div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              {CAR_BRANDS.map(b => (
+                <FilterBtn key={b} active={brandFilter === b} onClick={() => setBrandFilter(b)}>{b}</FilterBtn>
+              ))}
             </div>
-            {p.area && <div style={{ color: S.muted, fontSize: "13px", marginBottom: "6px" }}>📍 {p.area}</div>}
-            {p.phone && (
-              <a href={`tel:${p.phone}`} style={{ color: S.accent, textDecoration: "none", fontWeight: "600" }}>
-                📞 {p.phone}
-              </a>
-            )}
-            {p.notes && <div style={{ color: S.muted, fontSize: "13px", marginTop: "8px" }}>{p.notes}</div>}
           </div>
-        ))}
-      </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px", marginTop: "16px" }}>
+            {filteredGarages.length === 0 && (
+              <div style={{ color: S.muted, gridColumn: "1/-1", textAlign: "center", padding: "40px" }}>
+                😕 לא נמצאו מוסכים
+              </div>
+            )}
+            {filteredGarages.map(p => <ProviderCard key={p.id} p={p} />)}
+          </div>
+        </div>
+      )}
+
+      {tab === "road" && (
+        <div>
+          {/* Filter by service type */}
+          <div style={{ marginBottom: "12px" }}>
+            <div style={{ color: S.muted, fontSize: "12px", marginBottom: "8px", fontWeight: "600" }}>סינון לפי סוג שירות:</div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <FilterBtn active={!serviceFilter} onClick={() => setServiceFilter("")}>הכל</FilterBtn>
+              {ROAD_SERVICES.map(s => (
+                <FilterBtn key={s.key} active={serviceFilter === s.key} onClick={() => setServiceFilter(s.key)}>
+                  {s.label}
+                </FilterBtn>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px", marginTop: "16px" }}>
+            {filteredRoad.length === 0 && (
+              <div style={{ color: S.muted, gridColumn: "1/-1", textAlign: "center", padding: "40px" }}>
+                😕 לא נמצאו שירותי דרך — הוסף ספקים מהאדמין
+              </div>
+            )}
+            {filteredRoad.map(p => <ProviderCard key={p.id} p={p} />)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
