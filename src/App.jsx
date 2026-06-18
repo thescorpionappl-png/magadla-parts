@@ -284,7 +284,7 @@ function VehicleLookup({ user, saveUser, t }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [manualData, setManualData] = useState({
-    vin: "", gear: "", drive: "", firstDate: ""
+    vin: "", engine: "", gear: "", drive: "", firstDate: ""
   });
 
   const lookup = async () => {
@@ -292,7 +292,7 @@ function VehicleLookup({ user, saveUser, t }) {
     setLoading(true);
     setError("");
     setResult(null);
-    setManualData({ vin: "", gear: "", drive: "", firstDate: "" });
+    setManualData({ vin: "", engine: "", gear: "", drive: "", firstDate: "" });
     try {
       const clean = plate.replace(/-/g, "").trim();
       const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=053cea08-09bc-40ec-8f7a-156f0677aff3&q=${clean}&limit=1`;
@@ -324,7 +324,7 @@ function VehicleLookup({ user, saveUser, t }) {
     saveUser({ ...user, vehicles: newVehicles });
     setPlate("");
     setResult(null);
-    setManualData({ vin: "", gear: "", drive: "", firstDate: "" });
+    setManualData({ vin: "", engine: "", gear: "", drive: "", firstDate: "" });
   };
 
   return (
@@ -365,25 +365,39 @@ function VehicleLookup({ user, saveUser, t }) {
             <div style={{ fontSize: "11px", color: S.muted, fontWeight: "700", marginBottom: "8px" }}>📝 השלם את הנתונים:</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>🏷️ מספר שילדה</label>
+                <label style={{ fontSize: "11px", color: S.muted }}>🔧 נפח מנוע (cc)</label>
+                <input style={{ ...S.input, marginTop: "4px" }} placeholder="1600" value={manualData.engine}
+                  onChange={e => setManualData({ ...manualData, engine: e.target.value })}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: "11px", color: S.muted }}>⚙️ סוג הילוכים</label>
+                <select style={{ ...S.input, marginTop: "4px" }} value={manualData.gear}
+                  onChange={e => setManualData({ ...manualData, gear: e.target.value })}>
+                  <option value="">בחר...</option>
+                  <option value="יד">יד</option>
+                  <option value="אוטומט">אוטומט</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "11px", color: S.muted }}>🚗 סוג הנעה</label>
+                <select style={{ ...S.input, marginTop: "4px" }} value={manualData.drive}
+                  onChange={e => setManualData({ ...manualData, drive: e.target.value })}>
+                  <option value="">בחר...</option>
+                  <option value="2X4 - קדמי">2X4 - קדמי</option>
+                  <option value="2X4 - אחורי">2X4 - אחורי</option>
+                  <option value="4X4">4X4</option>
+                  <option value="כל הגלגלים">כל הגלגלים</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "11px", color: S.muted }}>🏷️ מספר שילדה (VIN)</label>
                 <input style={{ ...S.input, marginTop: "4px" }} placeholder="VIN" value={manualData.vin}
                   onChange={e => setManualData({ ...manualData, vin: e.target.value })}
                 />
               </div>
               <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>⚙️ תיבת הילוכים</label>
-                <input style={{ ...S.input, marginTop: "4px" }} placeholder="יד / אוטומט" value={manualData.gear}
-                  onChange={e => setManualData({ ...manualData, gear: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>🚗 סוג הנעה</label>
-                <input style={{ ...S.input, marginTop: "4px" }} placeholder="קדמית / אחורית / 4WD" value={manualData.drive}
-                  onChange={e => setManualData({ ...manualData, drive: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>📆 תאריך עליה</label>
+                <label style={{ fontSize: "11px", color: S.muted }}>📆 תאריך עליה לכביש</label>
                 <input style={{ ...S.input, marginTop: "4px" }} placeholder="DD/MM/YYYY" value={manualData.firstDate}
                   onChange={e => setManualData({ ...manualData, firstDate: e.target.value })}
                 />
