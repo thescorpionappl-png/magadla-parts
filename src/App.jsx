@@ -261,15 +261,16 @@ export default function App() {
 
   const handleLogin = async (phone, name) => {
     setLoading(true);
+    setError("");
     try {
       let u = await DB.getUserByPhone(phone);
-      if (!u) u = await DB.createUser({ phone, name });
+      if (!u) u = await DB.createUser({ phone, name: name || "משתמש" });
       setUser(u);
       setCart(u.cart || []);
       localStorage.setItem("wheels_session", phone);
       setPage("home");
     } catch (e) {
-      setError("שגיאה בהתחברות");
+      setError("שגיאה בהתחברות — נסה שוב");
     }
     setLoading(false);
   };
@@ -409,6 +410,15 @@ function NavBtn({ icon, label, active, onClick }) {
 function LoginPage({ onLogin, loading, error }) {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
+  const [step, setStep] = useState(1); // 1=phone, 2=name
+
+  const handlePhoneNext = () => {
+    if (phone.length >= 9) setStep(2);
+  };
+
+  const handleSubmit = () => {
+    onLogin(phone, name);
+  };
 
   return (
     <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -417,24 +427,65 @@ function LoginPage({ onLogin, loading, error }) {
         <h1 style={{ color: S.accent, fontSize: "28px", margin: "0 0 4px" }}>WHEELS</h1>
         <p style={{ color: S.muted, marginBottom: "24px", fontSize: "14px" }}>חלקי חילוף לגלגלים ורכב</p>
 
-        <input
-          style={{ ...S.input, marginBottom: "12px" }}
-          type="tel" placeholder="מספר טלפון" value={phone}
-          onChange={e => setPhone(e.target.value)}
-        />
-        <input
-          style={{ ...S.input, marginBottom: "20px" }}
-          type="text" placeholder="שם מלא (לרשמים חדשים)"
-          value={name} onChange={e => setName(e.target.value)}
-        />
-        <button
-          onClick={() => onLogin(phone, name)}
-          style={{ ...S.btn(), width: "100%", padding: "12px" }}
-          disabled={!phone || loading}
-        >
-          {loading ? "⏳ טוען..." : "כניסה / הרשמה"}
-        </button>
+        {step === 1 && (
+          <>
+            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
+              הכנס מספר טלפון להתחברות או הרשמה
+            </p>
+            <input
+              style={{ ...S.input, marginBottom: "16px", fontSize: "18px", textAlign: "center", letterSpacing: "2px" }}
+              type="tel"
+              placeholder="050-000-0000"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handlePhoneNext()}
+              autoFocus
+            />
+            <button
+              onClick={handlePhoneNext}
+              style={{ ...S.btn(), width: "100%", padding: "12px" }}
+              disabled={phone.length < 9 || loading}
+            >
+              המשך →
+            </button>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <p style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
+              מה השם שלך?
+            </p>
+            <div style={{ ...S.badge(S.accent), marginBottom: "16px", fontSize: "14px" }}>📱 {phone}</div>
+            <input
+              style={{ ...S.input, marginBottom: "16px", fontSize: "16px" }}
+              type="text"
+              placeholder="שם מלא"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              autoFocus
+            />
+            <button
+              onClick={handleSubmit}
+              style={{ ...S.btn(), width: "100%", padding: "12px", marginBottom: "8px" }}
+              disabled={!name.trim() || loading}
+            >
+              {loading ? "⏳ נכנס..." : "כניסה →"}
+            </button>
+            <button
+              onClick={() => setStep(1)}
+              style={{ ...S.btn("ghost"), width: "100%", padding: "8px" }}
+            >
+              ← שנה מספר
+            </button>
+          </>
+        )}
+
         {error && <p style={{ color: S.danger, marginTop: "12px", fontSize: "14px" }}>{error}</p>}
+        <p style={{ color: S.muted, fontSize: "11px", marginTop: "16px" }}>
+          ללא קוד אימות — כניסה מיידית
+        </p>
       </div>
     </div>
   );
