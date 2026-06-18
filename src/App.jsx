@@ -208,10 +208,9 @@ export default function App() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const storedPhone = localStorage.getItem("wheels_session");
-    if (storedPhone) {
-      loadUser(storedPhone).then(() => setPage("home"));
-    }
+    // Skip login - go directly to home
+    setPage("home");
+    setUser({ id: "guest", phone: "guest", name: "אורח", role: "customer", vehicles: [], cart: [] });
   }, []);
 
   const loadUser = async (phone) => {
@@ -238,7 +237,25 @@ export default function App() {
       setParts(p);
       setProviders(pr);
     } catch (e) {
-      setError("שגיאה בטעינת נתונים");
+      // Use demo data if Supabase fails
+      setCats([
+        { id: "1", name: "גלגלים", icon: "🛞" },
+        { id: "2", name: "בלמים", icon: "🔧" },
+        { id: "3", name: "מנוע", icon: "⚙️" },
+        { id: "4", name: "חשמל", icon: "⚡" },
+      ]);
+      setParts([
+        { id: "1", catId: "1", name: "צמיג Bridgestone 205/55R16", price: 450, catalogCode: "BS-205-55", manufacturer: "Bridgestone", stock: 8, active: true, compat: [] },
+        { id: "2", catId: "1", name: "חישוק אלומיניום 16 אינץ", price: 320, catalogCode: "RIM-16-AL", manufacturer: "Generic", stock: 4, active: true, compat: [] },
+        { id: "3", catId: "2", name: "רפידות בלם קדמיות", price: 180, catalogCode: "BR-FRONT-01", manufacturer: "Bosch", stock: 12, active: true, compat: [] },
+        { id: "4", catId: "2", name: "דיסק בלם", price: 240, catalogCode: "BR-DISC-01", manufacturer: "ATE", stock: 6, active: true, compat: [] },
+        { id: "5", catId: "3", name: "פילטר שמן", price: 35, catalogCode: "OIL-FLT-01", manufacturer: "Mann", stock: 20, active: true, compat: [] },
+        { id: "6", catId: "3", name: "חגורת טיימינג", price: 290, catalogCode: "TIM-BLT-01", manufacturer: "Gates", stock: 3, active: true, compat: [] },
+      ]);
+      setProviders([
+        { id: "1", type: "shop", name: "חנות גלגלים מגאדלה", area: "מגאדלה", phone: "04-6500000", notes: "מומחים לגלגלים וצמיגים" },
+        { id: "2", type: "garage", name: "מוסך אל-נור", area: "נצרת", phone: "04-6501111", notes: "כל סוגי הרכבים" },
+      ]);
     }
     setLoading(false);
   };
