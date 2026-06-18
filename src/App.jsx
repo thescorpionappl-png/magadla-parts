@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const S = {
   card: { background: "#141824", border: "1px solid #374151", borderRadius: "12px", padding: "14px" },
@@ -15,6 +15,10 @@ const S = {
   danger: "#EF4444",
   border: "#374151",
 };
+
+const BRAND_FILTERS = ["מרצדס", "BMW", "אאודי", "טויוטה", "יונדאי", "קיה", "סובארו", "מאזדה", "פולקסווגן", "פורד", "ניסן", "הונדה"];
+const SERVICE_FILTERS = ["מכונאות כללית", "חשמל רכב", "מיזוג אוויר", "גומים", "סוללות", "מצברים", "זכוכיות", "בדיקה טכנית"];
+const EMERGENCY_FILTERS = ["גרירה", "חילוץ", "טעינת סוללה", "פנצ'ר", "דלק חירום", "מנעולן"];
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -33,7 +37,7 @@ export default function App() {
       plateSearch: "לוחית רישוי", search: "חפש", manufacturer: "יצרן", model: "דגם",
       year: "שנה", engine: "מנוע", fuel: "דלק", gear: "הילוכים", color: "צבע",
       notFound: "לא נמצא", searchError: "שגיאה בחיפוש", saved: "✓ נשמר", inStock: "במלאי",
-      cart: "🛒 עגלה", total: "סה\"כ", confirmOrder: "אישור הזמנה", emptyCart: "עגלה ריקה",
+      total: "סה\"כ", confirmOrder: "אישור הזמנה", emptyCart: "עגלה ריקה",
       myOrders: "הזמנותיי", noOrders: "אין הזמנות", allParts: "כל החלקים",
     },
     ar: {
@@ -43,7 +47,7 @@ export default function App() {
       plateSearch: "رقم اللوحة", search: "بحث", manufacturer: "الصانع", model: "الموديل",
       year: "السنة", engine: "المحرك", fuel: "الوقود", gear: "الناقل", color: "اللون",
       notFound: "لم يجد", searchError: "خطأ البحث", saved: "✓ تم", inStock: "متوفر",
-      cart: "🛒 السلة", total: "المجموع", confirmOrder: "تأكيد", emptyCart: "فارغة",
+      total: "المجموع", confirmOrder: "تأكيد", emptyCart: "فارغة",
       myOrders: "طلباتي", noOrders: "لا توجد", allParts: "كل القطع",
     },
     en: {
@@ -53,16 +57,16 @@ export default function App() {
       plateSearch: "License plate", search: "Search", manufacturer: "Brand", model: "Model",
       year: "Year", engine: "Engine", fuel: "Fuel", gear: "Transmission", color: "Color",
       notFound: "Not found", searchError: "Error", saved: "✓ Saved", inStock: "In stock",
-      cart: "🛒 Cart", total: "Total", confirmOrder: "Order", emptyCart: "Empty",
+      total: "Total", confirmOrder: "Order", emptyCart: "Empty",
       myOrders: "My Orders", noOrders: "No orders", allParts: "All parts",
     }
   }[lang];
 
   const parts = [
-    { id: 1, name: "Tire 205/55R16", price: 450, stock: 10, code: "W001", brand: "Michelin", compat: { make: "Toyota", model: "Corolla" } },
-    { id: 2, name: "Oil 5W30", price: 80, stock: 25, code: "O001", brand: "Shell", compat: {} },
-    { id: 3, name: "Battery 60Ah", price: 320, stock: 5, code: "B001", brand: "Varta", compat: {} },
-    { id: 4, name: "Air Filter", price: 120, stock: 15, code: "F001", brand: "Bosch", compat: {} },
+    { id: 1, name: "Tire 205/55R16", price: 450, stock: 10, code: "W001", brand: "Michelin" },
+    { id: 2, name: "Oil 5W30", price: 80, stock: 25, code: "O001", brand: "Shell" },
+    { id: 3, name: "Battery 60Ah", price: 320, stock: 5, code: "B001", brand: "Varta" },
+    { id: 4, name: "Air Filter", price: 120, stock: 15, code: "F001", brand: "Bosch" },
   ];
 
   const providers = [
@@ -144,10 +148,55 @@ export default function App() {
         </button>
       </div>
 
-      {/* Home */}
+      {/* Home with Filters */}
       {page === "home" && (
         <div>
-          <h2 style={{ marginTop: "0" }}>🛍️ {t.allParts}</h2>
+          {/* Filters Section */}
+          <div style={{ ...S.card, marginBottom: "20px", background: "#0D1120" }}>
+            <h3 style={{ marginTop: "0", marginBottom: "14px" }}>🔍 פילטרים</h3>
+            
+            {/* Brand Filters */}
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ color: S.muted, fontSize: "12px", fontWeight: "700", marginBottom: "8px" }}>🚗 מותגי רכב</div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {BRAND_FILTERS.map(brand => (
+                  <button key={brand} style={{
+                    ...S.btn("ghost"),
+                    padding: "6px 12px", fontSize: "12px"
+                  }}>{brand}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Service Filters */}
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ color: S.muted, fontSize: "12px", fontWeight: "700", marginBottom: "8px" }}>🔧 סוגי שירות</div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {SERVICE_FILTERS.map(service => (
+                  <button key={service} style={{
+                    ...S.btn("ghost"),
+                    padding: "6px 12px", fontSize: "12px"
+                  }}>{service}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Emergency Filters */}
+            <div>
+              <div style={{ color: S.muted, fontSize: "12px", fontWeight: "700", marginBottom: "8px" }}>🚨 שירותי חירום</div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {EMERGENCY_FILTERS.map(emergency => (
+                  <button key={emergency} style={{
+                    ...S.btn("ghost"),
+                    padding: "6px 12px", fontSize: "12px"
+                  }}>{emergency}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Parts */}
+          <h2>🛍️ {t.allParts}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px" }}>
             {parts.map(p => (
               <div key={p.id} style={S.card}>
@@ -172,26 +221,52 @@ export default function App() {
       {/* Profile */}
       {page === "profile" && (
         <div>
-          <h2 style={{ marginTop: "0" }}>{t.myVehicles}</h2>
-          <div style={S.card}>
+          <h2 style={{ marginTop: "0" }}>👤 הפרופיל שלי</h2>
+          
+          {/* Add Vehicle Section */}
+          <div style={{ ...S.card, background: "linear-gradient(135deg, #F59E0B22, #3B82F611)", border: "2px solid #F59E0B44", marginBottom: "20px" }}>
+            <h3 style={{ marginTop: "0", color: S.accent }}>➕ הוסף רכב חדש</h3>
+            <p style={{ color: S.muted, fontSize: "13px", margin: "0 0 12px" }}>הקלד לוחית רישוי → המידע יטען אוטומטית</p>
+            <VehicleLookup user={user} saveUser={saveUser} t={t} />
+          </div>
+
+          {/* My Vehicles Section */}
+          <div>
+            <h3 style={{ marginTop: "0", marginBottom: "12px" }}>🚗 הרכבים שלי ({user.vehicles?.length || 0})</h3>
+            
             {user.vehicles?.length === 0 ? (
-              <p style={{ color: S.muted }}>{t.noVehicles}</p>
+              <div style={{ ...S.card, textAlign: "center", color: S.muted, padding: "40px 20px" }}>
+                <div style={{ fontSize: "32px", marginBottom: "8px" }}>🚗</div>
+                <p>{t.noVehicles}</p>
+              </div>
             ) : (
               user.vehicles.map((v, i) => (
-                <div key={i} style={{ background: "#0B0F1A", padding: "10px", borderRadius: "8px", marginBottom: "8px", display: "flex", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ fontWeight: "700" }}>{v.make} {v.model}</div>
-                    <div style={{ fontSize: "12px", color: S.muted }}>🏷️ {v.plate}</div>
+                <div key={i} style={{ ...S.card, marginBottom: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: "800", fontSize: "18px", marginBottom: "4px" }}>
+                        {v.make} {v.model}
+                      </div>
+                      <div style={{ fontSize: "14px", color: S.accent, fontWeight: "800", marginBottom: "12px" }}>
+                        🏷️ {v.plate}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "13px" }}>
+                        {v.year && <div><span style={{ color: S.accent }}>📅</span> {v.year}</div>}
+                        {v.engine && <div><span style={{ color: S.accent }}>🔧</span> {v.engine}cc</div>}
+                        {v.fuel && <div><span style={{ color: S.accent }}>⛽</span> {v.fuel}</div>}
+                        {v.gear && <div><span style={{ color: S.accent }}>⚙️</span> {v.gear}</div>}
+                        {v.drive && <div><span style={{ color: S.accent }}>🚗</span> {v.drive}</div>}
+                        {v.color && <div><span style={{ color: S.accent }}>🎨</span> {v.color}</div>}
+                      </div>
+                    </div>
+                    <button onClick={() => saveUser({ ...user, vehicles: user.vehicles.filter((_, j) => j !== i) })} 
+                      style={{ ...S.btn("danger"), padding: "6px 10px", whiteSpace: "nowrap", height: "fit-content" }}>
+                      🗑️ מחק
+                    </button>
                   </div>
-                  <button onClick={() => saveUser({ ...user, vehicles: user.vehicles.filter((_, j) => j !== i) })} style={{ ...S.btn("danger"), padding: "4px 8px" }}>✕</button>
                 </div>
               ))
             )}
-          </div>
-
-          <div style={{ ...S.card, marginTop: "16px" }}>
-            <h3 style={{ marginTop: "0" }}>{t.addVehicle}</h3>
-            <VehicleLookup user={user} saveUser={saveUser} t={t} />
           </div>
         </div>
       )}
@@ -199,7 +274,7 @@ export default function App() {
       {/* Providers */}
       {page === "providers" && (
         <div>
-          <h2 style={{ marginTop: "0" }}>🔧 {t.providers}</h2>
+          <h2 style={{ marginTop: "0" }}>🔧 סדנות וספקים</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px" }}>
             {providers.map(p => (
               <div key={p.id} style={S.card}>
@@ -217,11 +292,9 @@ export default function App() {
       {/* Cart */}
       {page === "cart" && (
         <div>
-          <h2 style={{ marginTop: "0" }}>{t.cart}</h2>
+          <h2 style={{ marginTop: "0" }}>🛒 עגלה</h2>
           {cart.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: S.muted }}>
-              {t.emptyCart}
-            </div>
+            <div style={{ textAlign: "center", padding: "40px", color: S.muted }}>{t.emptyCart}</div>
           ) : (
             <>
               {cart.map(item => (
@@ -242,9 +315,7 @@ export default function App() {
                 <span>{t.total}</span>
                 <span style={{ color: S.accent }}>₪{cart.reduce((s, i) => s + i.price * i.qty, 0)}</span>
               </div>
-              <button onClick={placeOrder} style={{ ...S.btn(), width: "100%", marginTop: "12px", fontSize: "14px" }}>
-                {t.confirmOrder}
-              </button>
+              <button onClick={placeOrder} style={{ ...S.btn(), width: "100%", marginTop: "12px", fontSize: "14px" }}>{t.confirmOrder}</button>
             </>
           )}
         </div>
@@ -255,9 +326,7 @@ export default function App() {
         <div>
           <h2 style={{ marginTop: "0" }}>{t.myOrders}</h2>
           {!user.orders || user.orders.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: S.muted }}>
-              {t.noOrders}
-            </div>
+            <div style={{ textAlign: "center", padding: "40px", color: S.muted }}>{t.noOrders}</div>
           ) : (
             user.orders.map((o, i) => (
               <div key={i} style={S.card}>
@@ -303,9 +372,9 @@ function VehicleLookup({ user, saveUser, t }) {
           make: record.tozeret_nm || "Unknown",
           model: record.kinuy_mishari || "Unknown",
           year: record.shnat_yitzur || "-",
-          engine: record.nefah_manoa || record.emitspik_cc || "-",
+          engine: record.nefah_manoa || "-",
           fuel: record.sug_delek_nm || "-",
-          gear: record.mispar_halukot ? (record.mispar_halukot === "0" ? "יד" : "אוטומט") : (record.technologiat_hanaa_nm || "-"),
+          gear: record.mispar_halukot ? (record.mispar_halukot === "0" ? "יד" : "אוטומט") : "-",
           drive: record.sug_hanaa_nm || "-",
           color: record.tzeva_rechev || "-",
           vin: record.misgeret || "-",
@@ -314,7 +383,6 @@ function VehicleLookup({ user, saveUser, t }) {
       }
     } catch (e) {
       setError(t.searchError);
-      console.log("API Error:", e);
     }
     setLoading(false);
   };
@@ -342,59 +410,41 @@ function VehicleLookup({ user, saveUser, t }) {
         </button>
       </div>
 
-      {error && <p style={{ color: S.danger, fontSize: "12px" }}>{error}</p>}
+      {error && <p style={{ color: "#EF4444", fontSize: "12px" }}>{error}</p>}
 
       {result && (
         <div style={{ background: "#0B0F1A", borderRadius: "8px", padding: "12px", marginBottom: "12px" }}>
-          <div style={{ fontWeight: "800", color: S.accent, marginBottom: "12px", fontSize: "16px" }}>
+          <div style={{ fontWeight: "800", color: "#F59E0B", marginBottom: "12px", fontSize: "16px" }}>
             🚗 {result.make} {result.model}
           </div>
-          
-          {/* All vehicle data */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px", fontSize: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px" }}>
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>📅 שנת יצור</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.year}</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>📅 שנה</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.year}</div>
             </div>
-            
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>🔧 נפח מנוע</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.engine}cc</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>🔧 מנוע</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.engine}cc</div>
             </div>
-            
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>⛽ סוג דלק</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.fuel}</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>⛽ דלק</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.fuel}</div>
             </div>
-            
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>🎨 צבע</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.color}</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>⚙️ הילוכים</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.gear}</div>
             </div>
-            
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>⚙️ סוג הילוכים</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.gear}</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>🚗 הנעה</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.drive}</div>
             </div>
-            
             <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>🚗 סוג הנעה</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.drive}</div>
-            </div>
-            
-            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>📆 תאריך עליה</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.firstDate}</div>
-            </div>
-            
-            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
-              <div style={{ color: S.muted, fontSize: "10px" }}>🏷️ מספר שילדה</div>
-              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px", fontSize: "10px", wordBreak: "break-all" }}>{result.vin}</div>
+              <div style={{ color: "#9CA3AF", fontSize: "10px" }}>🎨 צבע</div>
+              <div style={{ fontWeight: "700", color: "#F59E0B", marginTop: "4px" }}>{result.color}</div>
             </div>
           </div>
-          
           <button onClick={addVehicle} style={{ ...S.btn(), width: "100%", marginTop: "12px" }}>
-            ✅ {t.addVehicle}
+            ✅ הוסף רכב
           </button>
         </div>
       )}
