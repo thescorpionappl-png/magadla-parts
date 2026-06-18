@@ -511,25 +511,38 @@ function LoginPage({ onLogin, loading, error }) {
 // ─── Home Page ──────────────────────────────────────────────────────────────
 function HomePage({ cats, parts, onAddToCart, user }) {
   const [search, setSearch] = useState("");
-  const [filterMake, setFilterMake] = useState("");
-  const [filterModel, setFilterModel] = useState("");
-  const [filterYear, setFilterYear] = useState("");
-  const [selectedCat, setSelectedCat] = useState(null);
+  const [selectedVehicleIds, setSelectedVehicleIds] = useState([]);
+  const [selectedCats, setSelectedCats] = useState([]);
   const [added, setAdded] = useState({});
 
   const vehicles = user?.vehicles || [];
-  const makes = [...new Set(vehicles.map(v => v.make))];
+
+  // שלב 1: סינון לפי רכב (בחירה מרובה)
+  const toggleVehicle = (id) => {
+    setSelectedVehicleIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  // שלב 2: סינון לפי קטגוריה (בחירה מרובה)
+  const toggleCat = (id) => {
+    setSelectedCats(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const selectedVehicles = vehicles.filter(v => selectedVehicleIds.includes(v.id));
 
   const filtered = parts.filter(p => {
     const matchSearch = !search || p.name.includes(search) || (p.catalogCode || "").includes(search);
-    const matchCat = !selectedCat || p.catId === selectedCat;
-    const matchCompat = !filterMake || !p.compat || p.compat.length === 0 ||
-      p.compat.some(c =>
-        (!filterMake || c.make === filterMake) &&
-        (!filterModel || c.model === filterModel) &&
-        (!filterYear || String(c.year) === filterYear)
+    const matchCat = selectedCats.length === 0 || selectedCats.includes(p.catId);
+    const matchVehicle = selectedVehicles.length === 0 || !p.compat || p.compat.length === 0 ||
+      selectedVehicles.some(v =>
+        p.compat.some(c =>
+          c.make === v.make && c.model === v.model
+        )
       );
-    return matchSearch && matchCat && matchCompat;
+    return matchSearch && matchCat && matchVehicle;
   });
 
   const handleAdd = (part) => {
@@ -538,52 +551,95 @@ function HomePage({ cats, parts, onAddToCart, user }) {
     setTimeout(() => setAdded(a => ({ ...a, [part.id]: false })), 1500);
   };
 
+  const activeFilters = selectedVehicleIds.length + selectedCats.length;
+
   return (
     <div>
-      {/* Hero search */}
-      <div style={{ ...S.card, marginBottom: "20px", background: "linear-gradient(135deg, #141824, #1a2035)" }}>
-        <h2 style={{ color: S.accent, margin: "0 0 16px", fontSize: "20px" }}>🔍 חפש חלקים</h2>
+      {/* ── שורה 1: פילטר רכבים ── */}
+      <div style={{ background: "#0D1120", borderBottom: `1px solid ${S.border}`, padding: "12px 0", marginBottom: "0" }}>
+        <div style={{ marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>שלב 1 — בחר רכב</span>
+          {selectedVehicleIds.length > 0 && (
+            <button onClick={() => setSelectedVehicleIds([])} style={{ background: "none", border: "none", color: S.danger, fontSize: "11px", cursor: "pointer" }}>נקה</button>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {vehicles.length === 0 ? (
+            <span style={{ color: S.muted, fontSize: "13px" }}>💡 הוסף רכב בפרופיל כדי לסנן חלקים</span>
+          ) : (
+            vehicles.map(v => {
+              const active = selectedVehicleIds.includes(v.id);
+              return (
+                <button key={v.id} onClick={() => toggleVehicle(v.id)} style={{
+                  background: active ? S.accent : "#1a2035",
+                  color: active ? "#0B0F1A" : S.text,
+                  border: `2px solid ${active ? S.accent : S.border}`,
+                  borderRadius: "10px", padding: "8px 14px", cursor: "pointer",
+                  fontWeight: active ? "700" : "400", fontSize: "13px",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                }}>
+                  <span style={{ fontSize: "18px" }}>🚗</span>
+                  <span>{v.make} {v.model}</span>
+                  <span style={{ fontSize: "11px", opacity: 0.7 }}>{v.plate}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ── שורה 2: פילטר קטגוריות ── */}
+      <div style={{ background: "#0F1425", borderBottom: `1px solid ${S.border}`, padding: "10px 0", marginBottom: "20px" }}>
+        <div style={{ marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ color: S.muted, fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>שלב 2 — בחר קטגוריה</span>
+          {selectedCats.length > 0 && (
+            <button onClick={() => setSelectedCats([])} style={{ background: "none", border: "none", color: S.danger, fontSize: "11px", cursor: "pointer" }}>נקה</button>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+          {cats.map(cat => {
+            const active = selectedCats.includes(cat.id);
+            return (
+              <button key={cat.id} onClick={() => toggleCat(cat.id)} style={{
+                background: active ? "#3B82F6" : "#1a2035",
+                color: active ? "#fff" : S.muted,
+                border: `1px solid ${active ? "#3B82F6" : S.border}`,
+                borderRadius: "20px", padding: "5px 12px", cursor: "pointer",
+                fontWeight: active ? "700" : "400", fontSize: "13px",
+              }}>
+                {cat.icon} {cat.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── חיפוש חופשי ── */}
+      <div style={{ marginBottom: "16px", display: "flex", gap: "10px", alignItems: "center" }}>
         <input
-          style={{ ...S.input, marginBottom: "12px" }}
-          placeholder="שם חלק, קוד קטלוגי..." value={search}
+          style={{ ...S.input, flex: 1 }}
+          placeholder="🔍 חפש לפי שם חלק או קוד קטלוגי..."
+          value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        {vehicles.length > 0 && (
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <select style={{ ...S.input, width: "auto", flex: 1 }} value={filterMake} onChange={e => setFilterMake(e.target.value)}>
-              <option value="">כל המותגים</option>
-              {makes.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <input style={{ ...S.input, flex: 1 }} placeholder="דגם" value={filterModel} onChange={e => setFilterModel(e.target.value)} />
-            <input style={{ ...S.input, flex: 1, maxWidth: "100px" }} placeholder="שנה" value={filterYear} onChange={e => setFilterYear(e.target.value)} />
-          </div>
-        )}
-        {vehicles.length === 0 && (
-          <p style={{ color: S.muted, fontSize: "13px", margin: "8px 0 0" }}>💡 הוסף רכב בפרופיל שלך כדי לסנן לפי תאימות</p>
-        )}
-      </div>
-
-      {/* Categories */}
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "20px" }}>
-        <button
-          onClick={() => setSelectedCat(null)}
-          style={{ ...S.btn(selectedCat === null ? "primary" : "ghost"), padding: "6px 14px", fontSize: "13px" }}
-        >הכל</button>
-        {cats.map(cat => (
-          <button key={cat.id}
-            onClick={() => setSelectedCat(selectedCat === cat.id ? null : cat.id)}
-            style={{ ...S.btn(selectedCat === cat.id ? "primary" : "ghost"), padding: "6px 14px", fontSize: "13px" }}
-          >
-            {cat.icon} {cat.name}
+        {activeFilters > 0 && (
+          <button onClick={() => { setSelectedVehicleIds([]); setSelectedCats([]); setSearch(""); }}
+            style={{ ...S.btn("danger"), padding: "10px 16px", whiteSpace: "nowrap" }}>
+            נקה הכל ({activeFilters})
           </button>
-        ))}
+        )}
       </div>
 
-      {/* Parts grid */}
+      {/* ── תוצאות ── */}
+      <div style={{ color: S.muted, fontSize: "13px", marginBottom: "12px" }}>
+        {filtered.length} חלקים נמצאו
+        {selectedVehicleIds.length > 0 && ` לרכבים שנבחרו`}
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "14px" }}>
         {filtered.length === 0 && (
           <div style={{ gridColumn: "1/-1", textAlign: "center", color: S.muted, padding: "40px" }}>
-            😕 לא נמצאו חלקים
+            😕 לא נמצאו חלקים תואמים
           </div>
         )}
         {filtered.map(p => (
@@ -859,15 +915,54 @@ function ProvidersPage({ providers }) {
 // ─── Profile Page ─────────────────────────────────────────────────────────────
 function ProfilePage({ user, onUpdateVehicles, onLogout }) {
   const [vehicles, setVehicles] = useState(user?.vehicles || []);
-  const [newV, setNewV] = useState({ make: "", model: "", year: "", plate: "" });
+  const [plate, setPlate] = useState("");
+  const [lookupResult, setLookupResult] = useState(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState("");
   const [saved, setSaved] = useState(false);
 
+  const lookupPlate = async () => {
+    if (!plate.trim()) return;
+    setLookupLoading(true);
+    setLookupError("");
+    setLookupResult(null);
+    try {
+      // API רשמי של משרד התחבורה ישראל (data.gov.il)
+      const clean = plate.replace(/-/g, "").trim();
+      const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=053cea08-09bc-40ec-8f7a-156f0677aff3&q=${clean}&limit=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const record = data?.result?.records?.[0];
+      if (!record) {
+        setLookupError("לא נמצא רכב עם לוחית רישוי זו");
+      } else {
+        setLookupResult({
+          plate: clean,
+          make: record.tozeret_nm || "",
+          model: record.kinuy_mishari || "",
+          year: record.shnat_yitzur || "",
+          color: record.tzeva_rechev || "",
+          engine: record.nefah_manoa || "",
+          fuel: record.sug_delek_nm || "",
+          gear: record.technologiat_hanaa_nm || record.mispar_halukot || "",
+          vin: record.misgeret || "",
+          owners: record.baalut || "",
+          seats: record.mispar_moshavim || "",
+        });
+      }
+    } catch (e) {
+      setLookupError("שגיאה בחיפוש — נסה שוב");
+    }
+    setLookupLoading(false);
+  };
+
   const addVehicle = () => {
-    if (!newV.make || !newV.model) return;
-    const updated = [...vehicles, { ...newV, id: Date.now() }];
+    if (!lookupResult) return;
+    const updated = [...vehicles, { ...lookupResult, id: Date.now() }];
     setVehicles(updated);
     onUpdateVehicles(updated);
-    setNewV({ make: "", model: "", year: "", plate: "" });
+    setLookupResult(null);
+    setPlate("");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -877,6 +972,13 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
     setVehicles(updated);
     onUpdateVehicles(updated);
   };
+
+  const Field = ({ label, value }) => value ? (
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: `1px solid ${S.border}` }}>
+      <span style={{ color: S.muted, fontSize: "13px" }}>{label}</span>
+      <span style={{ fontWeight: "600", fontSize: "13px" }}>{value}</span>
+    </div>
+  ) : null;
 
   return (
     <div>
@@ -906,27 +1008,66 @@ function ProfilePage({ user, onUpdateVehicles, onLogout }) {
         )}
 
         {vehicles.map(v => (
-          <div key={v.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", background: S.bg, borderRadius: "8px", marginBottom: "8px" }}>
-            <div>
-              <span style={{ fontWeight: "700" }}>{v.make} {v.model}</span>
-              {v.year && <span style={{ color: S.muted, marginRight: "8px" }}> ({v.year})</span>}
-              {v.plate && <span style={{ ...S.badge(S.muted), marginRight: "8px" }}>{v.plate}</span>}
+          <div key={v.id} style={{ background: S.bg, borderRadius: "10px", padding: "12px", marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div>
+                <span style={{ fontWeight: "800", fontSize: "16px" }}>{v.make} {v.model}</span>
+                {v.year && <span style={{ color: S.muted, marginRight: "8px", fontSize: "14px" }}> {v.year}</span>}
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <span style={{ ...S.badge(S.accent), fontSize: "14px", fontWeight: "800" }}>{v.plate}</span>
+                <button onClick={() => removeVehicle(v.id)} style={{ ...S.btn("danger"), padding: "4px 10px" }}>✕</button>
+              </div>
             </div>
-            <button onClick={() => removeVehicle(v.id)} style={{ ...S.btn("danger"), padding: "4px 10px" }}>✕</button>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
+              {v.engine && <span style={{ color: S.muted, fontSize: "12px" }}>🔧 מנוע: {v.engine}cc</span>}
+              {v.fuel && <span style={{ color: S.muted, fontSize: "12px" }}>⛽ דלק: {v.fuel}</span>}
+              {v.gear && <span style={{ color: S.muted, fontSize: "12px" }}>⚙️ הילוכים: {v.gear}</span>}
+              {v.color && <span style={{ color: S.muted, fontSize: "12px" }}>🎨 צבע: {v.color}</span>}
+            </div>
           </div>
         ))}
 
+        {/* Plate lookup */}
         <div style={{ borderTop: `1px solid ${S.border}`, paddingTop: "16px", marginTop: "8px" }}>
-          <h4 style={{ marginBottom: "12px", color: S.muted }}>הוסף רכב</h4>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
-            <input style={S.input} placeholder="מותג (Toyota, BMW...)" value={newV.make} onChange={e => setNewV(v => ({ ...v, make: e.target.value }))} />
-            <input style={S.input} placeholder="דגם (Corolla, X5...)" value={newV.model} onChange={e => setNewV(v => ({ ...v, model: e.target.value }))} />
-            <input style={S.input} placeholder="שנה" value={newV.year} onChange={e => setNewV(v => ({ ...v, year: e.target.value }))} />
-            <input style={S.input} placeholder="מספר רישוי" value={newV.plate} onChange={e => setNewV(v => ({ ...v, plate: e.target.value }))} />
+          <h4 style={{ marginBottom: "12px" }}>➕ הוסף רכב לפי לוחית רישוי</h4>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "12px" }}>
+            <input
+              style={{ ...S.input, flex: 1, fontSize: "20px", textAlign: "center", letterSpacing: "4px", fontWeight: "800" }}
+              placeholder="12-345-67"
+              value={plate}
+              onChange={e => setPlate(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && lookupPlate()}
+              maxLength={8}
+            />
+            <button onClick={lookupPlate} style={{ ...S.btn(), padding: "10px 20px", whiteSpace: "nowrap" }}
+              disabled={lookupLoading}>
+              {lookupLoading ? "⏳" : "🔍 חפש"}
+            </button>
           </div>
-          <button onClick={addVehicle} style={{ ...S.btn(), width: "100%" }}>
-            {saved ? "✓ נשמר!" : "+ הוסף רכב"}
-          </button>
+
+          {lookupError && <p style={{ color: S.danger, fontSize: "14px", marginBottom: "12px" }}>{lookupError}</p>}
+
+          {lookupResult && (
+            <div style={{ background: S.bg, borderRadius: "10px", padding: "14px", marginBottom: "14px" }}>
+              <div style={{ fontWeight: "800", fontSize: "18px", marginBottom: "12px", color: S.accent }}>
+                🚗 {lookupResult.make} {lookupResult.model} {lookupResult.year}
+              </div>
+              <Field label="לוחית רישוי" value={lookupResult.plate} />
+              <Field label="יצרן" value={lookupResult.make} />
+              <Field label="דגם" value={lookupResult.model} />
+              <Field label="שנת ייצור" value={lookupResult.year} />
+              <Field label="צבע" value={lookupResult.color} />
+              <Field label="נפח מנוע" value={lookupResult.engine ? lookupResult.engine + " cc" : ""} />
+              <Field label="סוג דלק" value={lookupResult.fuel} />
+              <Field label="תיבת הילוכים" value={lookupResult.gear} />
+              <Field label="מספר שילדה" value={lookupResult.vin} />
+              <Field label="מספר מושבים" value={lookupResult.seats} />
+              <button onClick={addVehicle} style={{ ...S.btn(), width: "100%", marginTop: "14px", padding: "12px" }}>
+                {saved ? "✓ נשמר!" : "✅ הוסף רכב לפרופיל"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
