@@ -283,16 +283,12 @@ function VehicleLookup({ user, saveUser, t }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [manualData, setManualData] = useState({
-    vin: "", engine: "", gear: "", drive: "", firstDate: ""
-  });
 
   const lookup = async () => {
     if (!plate.trim()) return;
     setLoading(true);
     setError("");
     setResult(null);
-    setManualData({ vin: "", engine: "", gear: "", drive: "", firstDate: "" });
     try {
       const clean = plate.replace(/-/g, "").trim();
       const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=053cea08-09bc-40ec-8f7a-156f0677aff3&q=${clean}&limit=1`;
@@ -304,27 +300,31 @@ function VehicleLookup({ user, saveUser, t }) {
       } else {
         setResult({
           plate: clean,
-          make: record.tozeret_nm || "",
-          model: record.kinuy_mishari || "",
-          year: record.shnat_yitzur || "",
-          engine: record.nefah_manoa || "",
-          fuel: record.sug_delek_nm || "",
-          color: record.tzeva_rechev || "",
+          make: record.tozeret_nm || "Unknown",
+          model: record.kinuy_mishari || "Unknown",
+          year: record.shnat_yitzur || "-",
+          engine: record.nefah_manoa || record.emitspik_cc || "-",
+          fuel: record.sug_delek_nm || "-",
+          gear: record.mispar_halukot ? (record.mispar_halukot === "0" ? "יד" : "אוטומט") : (record.technologiat_hanaa_nm || "-"),
+          drive: record.sug_hanaa_nm || "-",
+          color: record.tzeva_rechev || "-",
+          vin: record.misgeret || "-",
+          firstDate: record.taarich_reshum || "-",
         });
       }
     } catch (e) {
       setError(t.searchError);
+      console.log("API Error:", e);
     }
     setLoading(false);
   };
 
   const addVehicle = () => {
     if (!result) return;
-    const newVehicles = [...(user.vehicles || []), { ...result, ...manualData }];
+    const newVehicles = [...(user.vehicles || []), result];
     saveUser({ ...user, vehicles: newVehicles });
     setPlate("");
     setResult(null);
-    setManualData({ vin: "", engine: "", gear: "", drive: "", firstDate: "" });
   };
 
   return (
@@ -347,61 +347,49 @@ function VehicleLookup({ user, saveUser, t }) {
       {result && (
         <div style={{ background: "#0B0F1A", borderRadius: "8px", padding: "12px", marginBottom: "12px" }}>
           <div style={{ fontWeight: "800", color: S.accent, marginBottom: "12px", fontSize: "16px" }}>
-            🚗 {result.make} {result.model} ({result.year})
+            🚗 {result.make} {result.model}
           </div>
           
-          {/* Auto-filled data */}
-          <div style={{ background: "#141824", borderRadius: "8px", padding: "10px", marginBottom: "12px" }}>
-            <div style={{ fontSize: "11px", color: S.muted, fontWeight: "700", marginBottom: "8px" }}>✓ נתונים אוטומטיים:</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "12px" }}>
-              {result.engine && <div><span style={{ color: S.muted }}>🔧</span> {result.engine}cc</div>}
-              {result.fuel && <div><span style={{ color: S.muted }}>⛽</span> {result.fuel}</div>}
-              {result.color && <div><span style={{ color: S.muted }}>🎨</span> {result.color}</div>}
+          {/* All vehicle data */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px", fontSize: "12px" }}>
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>📅 שנת יצור</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.year}</div>
             </div>
-          </div>
-          
-          {/* Manual input fields */}
-          <div style={{ background: "#141824", borderRadius: "8px", padding: "10px", marginBottom: "12px" }}>
-            <div style={{ fontSize: "11px", color: S.muted, fontWeight: "700", marginBottom: "8px" }}>📝 השלם את הנתונים:</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>🔧 נפח מנוע (cc)</label>
-                <input style={{ ...S.input, marginTop: "4px" }} placeholder="1600" value={manualData.engine}
-                  onChange={e => setManualData({ ...manualData, engine: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>⚙️ סוג הילוכים</label>
-                <select style={{ ...S.input, marginTop: "4px" }} value={manualData.gear}
-                  onChange={e => setManualData({ ...manualData, gear: e.target.value })}>
-                  <option value="">בחר...</option>
-                  <option value="יד">יד</option>
-                  <option value="אוטומט">אוטומט</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>🚗 סוג הנעה</label>
-                <select style={{ ...S.input, marginTop: "4px" }} value={manualData.drive}
-                  onChange={e => setManualData({ ...manualData, drive: e.target.value })}>
-                  <option value="">בחר...</option>
-                  <option value="2X4 - קדמי">2X4 - קדמי</option>
-                  <option value="2X4 - אחורי">2X4 - אחורי</option>
-                  <option value="4X4">4X4</option>
-                  <option value="כל הגלגלים">כל הגלגלים</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>🏷️ מספר שילדה (VIN)</label>
-                <input style={{ ...S.input, marginTop: "4px" }} placeholder="VIN" value={manualData.vin}
-                  onChange={e => setManualData({ ...manualData, vin: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "11px", color: S.muted }}>📆 תאריך עליה לכביש</label>
-                <input style={{ ...S.input, marginTop: "4px" }} placeholder="DD/MM/YYYY" value={manualData.firstDate}
-                  onChange={e => setManualData({ ...manualData, firstDate: e.target.value })}
-                />
-              </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>🔧 נפח מנוע</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.engine}cc</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>⛽ סוג דלק</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.fuel}</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>🎨 צבע</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.color}</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>⚙️ סוג הילוכים</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.gear}</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>🚗 סוג הנעה</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.drive}</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>📆 תאריך עליה</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px" }}>{result.firstDate}</div>
+            </div>
+            
+            <div style={{ background: "#141824", borderRadius: "6px", padding: "8px" }}>
+              <div style={{ color: S.muted, fontSize: "10px" }}>🏷️ מספר שילדה</div>
+              <div style={{ fontWeight: "700", color: S.accent, marginTop: "4px", fontSize: "10px", wordBreak: "break-all" }}>{result.vin}</div>
             </div>
           </div>
           
